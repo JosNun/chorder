@@ -3,7 +3,7 @@ import styled from 'styled-components';
 
 const StyledChordCard = styled.div`
   position: absolute;
-  top: 50%;
+  top: calc(50% - 5rem);
   left: calc(50% - 5rem);
   width: 10rem;
   padding-top: 10rem;
@@ -43,6 +43,7 @@ const ChordCardContent = styled.span`
   align-items: center;
   justify-content: center;
 
+  color: rgba(0, 0, 0, 0.87);
   font-family: 'Nunito', sans-serif;
   font-size: ${props => 8 / props.string.length}em;
   font-weight: 700;

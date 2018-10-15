@@ -3,6 +3,8 @@ import styled from 'styled-components';
 
 import ChordCard from './ChordCard';
 
+import BackIcon from 'react-svg-loader!./assets/arrow_back.svg';
+
 const Container = styled.div`
   position: fixed;
   top: 0;
@@ -20,6 +22,74 @@ const ChordsList = styled.main`
   height: 80%;
 `;
 
+const Controls = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+`;
+
+const NavIcon = styled(BackIcon)`
+  fill: #fff;
+  transform: rotate(${props => props.rotation || 0}deg);
+  transition-duration: 0.3s;
+`;
+
+const ScrollButton = styled.div`
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  padding: 5px 10px;
+
+  background: none;
+  border: 5px solid #ff8e72;
+  border-radius: 15px;
+  color: rgba(255, 255, 255, 0.9);
+  cursor: pointer;
+  font-family: 'Nunito', sans-serif;
+  font-size: 2rem;
+  user-select: none;
+  transition-duration: 0.3s;
+
+  &:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+
+    background: linear-gradient(
+      to ${props => (props.direction === 'left' ? 'right' : 'left')},
+      transparent,
+      #fff
+    );
+    transform: scaleX(0);
+    transform-origin: ${props =>
+        props.direction === 'left' ? 'right' : 'left'}
+      center;
+    transition-duration: 0.3s;
+    z-index: -1;
+  }
+
+  &:hover {
+    color: #ff8e72;
+  }
+
+  &:hover ${NavIcon} {
+    fill: #ff8e72;
+  }
+
+  &:hover:before {
+    background: linear-gradient(
+      to ${props => (props.direction === 'left' ? 'right' : 'left')},
+      #fff,
+      #fff
+    );
+    transform: scale(1.01);
+  }
+`;
+
 export default class App extends Component {
   constructor(props) {
     super(props);
@@ -27,14 +97,46 @@ export default class App extends Component {
     this.state = {
       chords: ['A', 'C', 'E', 'Bm', 'G'],
       index: 1,
+      autoScroll: false,
     };
+
+    let timer = null;
+
+    this.prevChord = this.prevChord.bind(this);
+    this.nextChord = this.nextChord.bind(this);
+    this.moveChord = this.moveChord.bind(this);
+    this.toggleAutoScroll = this.toggleAutoScroll.bind(this);
   }
 
   moveChord(amount) {
     let newIndex = this.state.index + amount;
+    let chords = this.state.chords;
     newIndex = Math.max(0, Math.min(newIndex, this.state.chords.length - 1));
+    if (newIndex > 1 && newIndex > this.state.index) {
+      chords.push(chords[newIndex - 2]);
+    }
     this.setState({
       index: newIndex,
+      chords: chords,
+    });
+  }
+
+  prevChord() {
+    this.moveChord(-1);
+  }
+
+  nextChord() {
+    this.moveChord(1);
+  }
+
+  handleArrowKey(e) {
+    if (e.key === 'ArrowLeft') this.prevChord();
+    else if (e.key === 'ArrowRight') this.nextChord();
+  }
+
+  toggleAutoScroll() {
+    this.setState({
+      autoScroll: !this.state.autoScroll,
     });
   }
 
@@ -53,14 +155,49 @@ export default class App extends Component {
     ));
   }
 
+  componentDidMount() {
+    window.addEventListener('keydown', this.handleArrowKey.bind(this), false);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener(
+      'keydown',
+      this.handleArrowKey.bind(this),
+      false
+    );
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (this.state.autoScroll && !prevState.autoScroll) {
+      this.timer = setInterval(this.nextChord, 1000);
+    } else if (this.timer && !this.state.autoScroll) {
+      clearInterval(this.timer);
+    }
+  }
+
   render() {
     return (
       <Container>
         <ChordsList className="chordsList">
           {this.renderChordsList(this.state.chords)}
         </ChordsList>
-        <button onClick={this.moveChord.bind(this, -1)}>Prev.</button>
-        <button onClick={this.moveChord.bind(this, 1)}>Next</button>
+        <Controls>
+          <ScrollButton
+            onClick={this.moveChord.bind(this, -1)}
+            direction="left"
+          >
+            <NavIcon /> Prev.
+          </ScrollButton>
+          <ScrollButton onClick={this.toggleAutoScroll}>
+            Auto Scroll
+          </ScrollButton>
+          <ScrollButton
+            onClick={this.moveChord.bind(this, 1)}
+            direction="right"
+          >
+            Next <NavIcon rotation="180" />
+          </ScrollButton>
+        </Controls>
       </Container>
     );
   }
