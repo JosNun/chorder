@@ -52,15 +52,17 @@ const ScrollButton = styled.div`
     z-index: -1;
   }
 
-  &:hover {
+  &:hover,
+  &.active {
     color: #ff8e72;
   }
 
-  &:hover ${NavIcon} {
+  &:hover ${NavIcon}, &.active ${NavIcon} {
     fill: #ff8e72;
   }
 
-  &:hover:before {
+  &:hover:before,
+  &.active:before {
     background: #fff;
     transform: scale(1.01);
   }
@@ -85,7 +87,14 @@ const Controls = props => {
       <ScrollButton onClick={props.prevChord} direction="left">
         <NavIcon /> Prev.
       </ScrollButton>
-      <ScrollButton onClick={props.toggleAutoScroll} direction="up">
+      <ScrollButton
+        onClick={() => {
+          props.toggleAutoScroll();
+          !props.autoScrolling && props.nextChord();
+        }}
+        direction="up"
+        className={props.autoScrolling ? 'active' : ''}
+      >
         Auto Scroll
       </ScrollButton>
       <ScrollButton onClick={props.nextChord} direction="right">

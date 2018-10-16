@@ -116,6 +116,7 @@ export default class App extends Component {
           nextChord={this.nextChord}
           prevChord={this.prevChord}
           toggleAutoScroll={this.toggleAutoScroll}
+          autoScrolling={this.state.autoScroll}
         />
       </Container>
     );
