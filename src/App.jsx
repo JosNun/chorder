@@ -29,6 +29,7 @@ export default class App extends Component {
       chords: ['A', 'C', 'E', 'Bm', 'G'],
       index: 1,
       autoScroll: false,
+      timerTick: 1000,
     };
 
     let timer = null;
@@ -37,6 +38,7 @@ export default class App extends Component {
     this.nextChord = this.nextChord.bind(this);
     this.moveChord = this.moveChord.bind(this);
     this.toggleAutoScroll = this.toggleAutoScroll.bind(this);
+    this.setTimerTick = this.setTimerTick.bind(this);
   }
 
   moveChord(amount) {
@@ -63,6 +65,12 @@ export default class App extends Component {
   handleArrowKey(e) {
     if (e.key === 'ArrowLeft') this.prevChord();
     else if (e.key === 'ArrowRight') this.nextChord();
+  }
+
+  setTimerTick(time) {
+    this.setState({
+      timerTick: time,
+    });
   }
 
   toggleAutoScroll() {
@@ -100,7 +108,7 @@ export default class App extends Component {
 
   componentDidUpdate(prevProps, prevState) {
     if (this.state.autoScroll && !prevState.autoScroll) {
-      this.timer = setInterval(this.nextChord, 1000);
+      this.timer = setInterval(this.nextChord, this.state.timerTick || 1000);
     } else if (this.timer && !this.state.autoScroll) {
       clearInterval(this.timer);
     }
@@ -117,6 +125,7 @@ export default class App extends Component {
           prevChord={this.prevChord}
           toggleAutoScroll={this.toggleAutoScroll}
           autoScrolling={this.state.autoScroll}
+          setTimerTick={this.setTimerTick}
         />
       </Container>
     );
